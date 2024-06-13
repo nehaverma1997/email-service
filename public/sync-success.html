@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Sync Success</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .table-container {
+      max-width: 100%;
+      overflow-x: auto; /* Enable horizontal scroll if table exceeds viewport width */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #38a09d;
+      color: #fff;
+    }
+
+    .home-link {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background-color: #38a09d;
+      color: #fff;
+      text-decoration: none;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .home-link:hover {
+      background-color: #0056b3; /* Darker shade of blue on hover */
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="home-link">Home</a>
+  <div class="container">
+    <h1>Email Sync Success</h1>
+    <div class="table-container">
+      <table id="emailTable">
+        <thead>
+          <tr>
+            <th>Email Type</th>
+            <th>Email ID</th>
+            <th>Thread ID</th>
+            <th>Label IDs</th>
+            <th>Snippet</th>
+            <th>History ID</th>
+            <th>Size Estimate</th>
+            <th>Internal Date</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be inserted here dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Get the query parameters from the URL
+        const params = new URLSearchParams(window.location.search);
+        const emailType = params.get('email_type');
+
+        // Construct the API endpoint with the query parameter
+        const response = await fetch(`/gmail/emails?email_type=${emailType}&pageSize=100&pageNumber=1`);
+        let data = await response.json();
+        console.log("response 1", data);
+        data = data.data.emails;
+        console.log("response 2", data.length);
+
+        const tableBody = document.querySelector('#emailTable tbody');
+        data.forEach(email => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${email._source.email_type || ''}</td>
+            <td>${email._source.email_id || ''}</td>
+            <td>${email._source.threadId || ''}</td>
+            <td>${Array.isArray(email._source.labelIds) ? email._source.labelIds.join(', ') : ''}</td>
+            <td>${email._source.snippet || ''}</td>
+            <td>${email._source.historyId || ''}</td>
+            <td>${email._source.sizeEstimate || ''}</td>
+            <td>${email._source.internalDate || ''}</td>
+            <td>${email._source.date ? new Date(email._source.date).toLocaleDateString() : ''}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    });
+  </script>
+</body>
+</html>
